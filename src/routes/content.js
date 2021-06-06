@@ -133,6 +133,23 @@ router.post("/addcomment", middleware.loggedIn, async (req, res) => {
   }
 });
 
+router.get("/getfavourites", middleware.loggedIn, async (req, res) => {
+  try {
+    const con = await mysql.createConnection(mysqlConfig);
+    const [data] = await con.execute(
+      `SELECT recipes.id, image, title FROM recipes JOIN favourites ON (${req.userData.id} = user_id AND recipes.id = recipe_id)`
+    );
+    con.end();
+
+    res.send(data);
+  } catch (err) {
+    console.log(err);
+    res
+      .status(500)
+      .send({ error: "Unexpected error. Please contact an admin" });
+  }
+});
+
 router.post("/addfavourite", middleware.loggedIn, async (req, res) => {
   if (!req.body.recipeId) {
     return res.status(500).send({ error: "Incorrect data" });
