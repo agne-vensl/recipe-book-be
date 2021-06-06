@@ -5,7 +5,7 @@ const middleware = require("../middleware");
 
 const { mysqlConfig } = require("../config");
 
-router.get("/addrecipe", middleware.loggedIn, async (req, res) => {
+router.post("/addrecipe", middleware.loggedIn, async (req, res) => {
   if (!req.body.image || !req.body.title || !req.body.description) {
     res.status(400).send({ error: "Incorrect data" });
   }
