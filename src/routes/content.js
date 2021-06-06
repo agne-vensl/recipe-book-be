@@ -63,4 +63,32 @@ router.post("/addrecipe", middleware.loggedIn, async (req, res) => {
   }
 });
 
+router.post("/addcomment", middleware.loggedIn, async (req, res) => {
+  if (!req.body.recipeId || !req.body.comment) {
+    return res.status(400).send({ error: "Incorrect data" });
+  }
+
+  try {
+    const con = await mysql.createConnection(mysqlConfig);
+    const [result] = await con.execute(
+      `INSERT INTO comments (recipe_id, user_id, comment) VALUES(${mysql.escape(
+        req.body.recipeId
+      )}, '${req.userData.id}', ${mysql.escape(req.body.comment)})`
+    );
+
+    if (result.affectedRows != 1) {
+      return res
+        .status(500)
+        .send({ error: "Could not add your comment. Please try again later" });
+    }
+
+    res.send({ message: "Comment added successfully" });
+  } catch (err) {
+    console.log(err);
+    res
+      .status(500)
+      .send({ error: "Unexpected error. Please contact an admin" });
+  }
+});
+
 module.exports = router;
