@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const mysql = require("mysql2/promise");
+const jwt = require("jsonwebtoken");
 const middleware = require("../middleware");
 
-const { mysqlConfig } = require("../config");
+const { mysqlConfig, jwtSecret } = require("../config");
 
 router.get("/recipes", middleware.loggedIn, async (req, res) => {
   try {
@@ -31,6 +32,43 @@ router.get("/recipes/:idfrom", middleware.loggedIn, async (req, res) => {
     con.end();
 
     res.send(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ error: "Database error. Please try again later." });
+  }
+});
+
+router.get("/recipe/:id", async (req, res) => {
+  let userId = 0;
+
+  // custom token validation used for determining whether user has recipe added to favourites
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    const decodedToken = jwt.verify(token, jwtSecret);
+    userId = decodedToken.id;
+  } catch (err) {
+    // don't need anything here, if validation fails, userId should stay 0
+  }
+
+  try {
+    const con = await mysql.createConnection(mysqlConfig);
+    
+    const [data] = await con.execute(
+      `SELECT recipes.id, image, title, description, owner_id as ownerId, name, surname, recipes.timestamp, 
+      COUNT((SELECT 1 FROM favourites WHERE ${userId} = favourites.user_id AND recipes.id = favourites.recipe_id LIMIT 1)) as favourite 
+      FROM recipes JOIN users ON (users.id = owner_id) WHERE recipes.id = ${mysql.escape(
+        req.params.id
+      )}`
+    );
+
+    const [comments] = await con.execute(
+      `SELECT comments.id, user_id as userId, name, surname, comment, timestamp FROM comments JOIN users ON (comments.user_id = users.id) WHERE recipe_id = ${mysql.escape(
+        req.params.id
+      )}`
+    );
+    con.end();
+
+    res.send({ data, comments });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: "Database error. Please try again later." });
