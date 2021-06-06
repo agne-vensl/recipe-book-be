@@ -95,4 +95,33 @@ router.post("/addcomment", middleware.loggedIn, async (req, res) => {
   }
 });
 
+router.post("/addfavourite", middleware.loggedIn, async (req, res) => {
+  if (!req.body.recipeId) {
+    return res.status(500).send({ error: "Incorrect data" });
+  }
+
+  try {
+    const con = await mysql.createConnection(mysqlConfig);
+    const [result] = await con.execute(
+      `INSERT INTO favourites (user_id, recipe_id) VALUES ('${
+        req.userData.id
+      }', ${mysql.escape(req.body.recipeId)})`
+    );
+    con.end();
+
+    if (result.affectedRows != 1) {
+      return res
+        .status(500)
+        .send({ error: "Unexpected error occured. Please try again later" });
+    }
+
+    res.send({ message: "Successfully added to favourites" });
+  } catch (err) {
+    console.log(err);
+    res
+      .status(500)
+      .send({ error: "Unexpected error occured. Please contact an admin" });
+  }
+});
+
 module.exports = router;
