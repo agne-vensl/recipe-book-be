@@ -5,6 +5,20 @@ const middleware = require("../middleware");
 
 const { mysqlConfig } = require("../config");
 
+router.get("/recipes", middleware.loggedIn, async (req, res) => {
+  try {
+    const con = await mysql.createConnection(mysqlConfig);
+    const [data] = await con.execute(
+      `SELECT * FROM recipes ORDER BY id DESC LIMIT 30`
+    );
+
+    res.send(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ error: "Database error. Please try again later." });
+  }
+});
+
 router.post("/addrecipe", middleware.loggedIn, async (req, res) => {
   if (!req.body.image || !req.body.title || !req.body.description) {
     res.status(400).send({ error: "Incorrect data" });
