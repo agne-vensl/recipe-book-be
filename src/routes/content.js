@@ -104,6 +104,30 @@ router.post("/addrecipe", middleware.loggedIn, async (req, res) => {
   }
 });
 
+router.get("/searchrecipes/:search", async (req, res) => {
+  const words = req.params.search.toLowerCase().split(/-| /);
+  const search = words.reduce((a, v) => {
+    return (
+      a + `${a ? " AND " : ""}LOWER(title) LIKE ${mysql.escape("%" + v + "%")}`
+    );
+  }, "");
+
+  try {
+    const con = await mysql.createConnection(mysqlConfig);
+    const [data] = await con.execute(
+      `SELECT id, image, title FROM recipes WHERE ${search} ORDER BY id DESC`
+    );
+    con.end();
+
+    res.send(data);
+  } catch (err) {
+    console.log(err);
+    res
+      .status(500)
+      .send({ error: "Unexpected error. Please contact an admin" });
+  }
+});
+
 router.post("/addcomment", middleware.loggedIn, async (req, res) => {
   if (!req.body.recipeId || !req.body.comment) {
     return res.status(400).send({ error: "Incorrect data" });
