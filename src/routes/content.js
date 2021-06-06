@@ -11,6 +11,7 @@ router.get("/recipes", middleware.loggedIn, async (req, res) => {
     const [data] = await con.execute(
       `SELECT * FROM recipes ORDER BY id DESC LIMIT 30`
     );
+    con.end();
 
     res.send(data);
   } catch (err) {
@@ -27,6 +28,7 @@ router.get("/recipes/:idfrom", middleware.loggedIn, async (req, res) => {
         Number(req.params.idfrom) - 1
       )}  ORDER BY id DESC LIMIT 30`
     );
+    con.end();
 
     res.send(data);
   } catch (err) {
@@ -49,6 +51,7 @@ router.post("/addrecipe", middleware.loggedIn, async (req, res) => {
         req.userData.id
       )}, ${mysql.escape(req.body.description)})`
     );
+    con.end();
 
     if (data.affectedRows != 1) {
       res.status(500).send({ error: "Database error. Please try again later" });
@@ -75,6 +78,7 @@ router.post("/addcomment", middleware.loggedIn, async (req, res) => {
         req.body.recipeId
       )}, '${req.userData.id}', ${mysql.escape(req.body.comment)})`
     );
+    con.end();
 
     if (result.affectedRows != 1) {
       return res
