@@ -6,11 +6,11 @@ const middleware = require("../middleware");
 
 const { mysqlConfig, jwtSecret } = require("../config");
 
-router.get("/recipes", middleware.loggedIn, async (req, res) => {
+router.get("/recipes", async (req, res) => {
   try {
     const con = await mysql.createConnection(mysqlConfig);
     const [data] = await con.execute(
-      `SELECT * FROM recipes ORDER BY id DESC LIMIT 30`
+      `SELECT id, image, title FROM recipes ORDER BY id DESC LIMIT 30`
     );
     con.end();
 
@@ -21,11 +21,11 @@ router.get("/recipes", middleware.loggedIn, async (req, res) => {
   }
 });
 
-router.get("/recipes/:idfrom", middleware.loggedIn, async (req, res) => {
+router.get("/recipes/:idfrom", async (req, res) => {
   try {
     const con = await mysql.createConnection(mysqlConfig);
     const [data] = await con.execute(
-      `SELECT * FROM recipes WHERE id BETWEEN 1 AND ${mysql.escape(
+      `SELECT id, image, title FROM recipes WHERE id BETWEEN 1 AND ${mysql.escape(
         Number(req.params.idfrom) - 1
       )}  ORDER BY id DESC LIMIT 30`
     );
@@ -52,7 +52,7 @@ router.get("/recipe/:id", async (req, res) => {
 
   try {
     const con = await mysql.createConnection(mysqlConfig);
-    
+
     const [data] = await con.execute(
       `SELECT recipes.id, image, title, description, owner_id as ownerId, name, surname, recipes.timestamp, 
       COUNT((SELECT 1 FROM favourites WHERE ${userId} = favourites.user_id AND recipes.id = favourites.recipe_id LIMIT 1)) as favourite 
