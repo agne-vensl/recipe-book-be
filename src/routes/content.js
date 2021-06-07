@@ -10,7 +10,7 @@ router.get("/recipes", async (req, res) => {
   try {
     const con = await mysql.createConnection(mysqlConfig);
     const [data] = await con.execute(
-      `SELECT id, image, title FROM recipes ORDER BY id DESC LIMIT 30`
+      `SELECT recipes.id, image, title, name, surname, timestamp FROM recipes JOIN users ON (recipes.owner_id = users.id) ORDER BY recipes.id DESC LIMIT 30`
     );
     con.end();
 
@@ -25,9 +25,9 @@ router.get("/recipes/:idfrom", async (req, res) => {
   try {
     const con = await mysql.createConnection(mysqlConfig);
     const [data] = await con.execute(
-      `SELECT id, image, title FROM recipes WHERE id BETWEEN 1 AND ${mysql.escape(
+      `SELECT recipes.id, image, title, name, surname, timestamp FROM recipes JOIN users ON (recipes.owner_id = users.id) WHERE recipes.id BETWEEN 1 AND ${
         Number(req.params.idfrom) - 1
-      )}  ORDER BY id DESC LIMIT 30`
+      }  ORDER BY recipes.id DESC LIMIT 30`
     );
     con.end();
 
@@ -53,7 +53,7 @@ router.get("/recipe/:id", async (req, res) => {
   try {
     const con = await mysql.createConnection(mysqlConfig);
 
-    const [data] = await con.execute(
+    const [[data]] = await con.execute(
       `SELECT recipes.id, image, title, description, owner_id as ownerId, name, surname, recipes.timestamp, 
       COUNT((SELECT 1 FROM favourites WHERE ${userId} = favourites.user_id AND recipes.id = favourites.recipe_id LIMIT 1)) as favourite 
       FROM recipes JOIN users ON (users.id = owner_id) WHERE recipes.id = ${mysql.escape(
@@ -140,7 +140,6 @@ router.post("/addcomment", middleware.loggedIn, async (req, res) => {
         req.body.recipeId
       )}, '${req.userData.id}', ${mysql.escape(req.body.comment)})`
     );
-    con.end();
 
     if (result.affectedRows != 1) {
       return res
@@ -148,7 +147,14 @@ router.post("/addcomment", middleware.loggedIn, async (req, res) => {
         .send({ error: "Could not add your comment. Please try again later" });
     }
 
-    res.send({ message: "Comment added successfully" });
+    const [[comment]] = await con.execute(
+      `SELECT comments.id, user_id as userId, name, surname, comment, timestamp FROM comments JOIN users ON (comments.user_id = users.id) WHERE comments.id = ${mysql.escape(
+        result.insertId
+      )}`
+    );
+    con.end();
+
+    res.send({ message: "Comment added successfully", comment });
   } catch (err) {
     console.log(err);
     res
