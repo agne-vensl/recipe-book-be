@@ -95,7 +95,7 @@ router.post("/addrecipe", middleware.loggedIn, async (req, res) => {
       res.status(500).send({ error: "Database error. Please try again later" });
     }
 
-    res.send({ message: "Successfully added to database" });
+    res.send({ message: "Successfully added to database", id: data.insertId });
   } catch (err) {
     console.log(err);
     res
