@@ -46,7 +46,15 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    res.send({ message: "Account successfully registered" });
+    const token = jwt.sign(
+      {
+        id: data.insertId,
+        email: req.body.email,
+      },
+      jwtSecret
+    );
+
+    res.send({ message: "Account successfully registered", token });
   } catch (err) {
     console.log(err);
     res
