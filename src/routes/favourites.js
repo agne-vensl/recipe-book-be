@@ -9,7 +9,7 @@ router.get("/getall", middleware.loggedIn, async (req, res) => {
   try {
     const con = await mysql.createConnection(mysqlConfig);
     const [data] = await con.execute(
-      `SELECT recipes.id, image, title FROM recipes JOIN favourites ON (${req.userData.id} = user_id AND recipes.id = recipe_id)`
+      `SELECT recipes.id, image, title, name, surname, timestamp FROM recipes JOIN users ON (recipes.owner_id = users.id) JOIN favourites ON (${req.userData.id} = user_id AND recipes.id = recipe_id)`
     );
     con.end();
 
