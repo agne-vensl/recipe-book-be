@@ -11,7 +11,8 @@ router.post("/register", async (req, res) => {
     !req.body.name ||
     !req.body.surname ||
     !req.body.email ||
-    !req.body.password
+    !req.body.password ||
+    req.body.password.length < 8
   ) {
     return res.status(400).send({ error: "Incorrect data" });
   }
