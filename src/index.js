@@ -3,7 +3,10 @@ const cors = require("cors");
 require("dotenv").config();
 
 const authRoutes = require("./routes/auth");
-const contentRoutes = require("./routes/content");
+const recipeRoutes = require("./routes/recipes");
+const commentRoutes = require("./routes/comments");
+const favouriteRoutes = require("./routes/favourites");
+const searchRoutes = require("./routes/search");
 
 const app = express();
 
@@ -15,7 +18,10 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth", authRoutes);
-app.use("/content", contentRoutes);
+app.use("/recipes", recipeRoutes);
+app.use("/comments", commentRoutes);
+app.use("/favourites", favouriteRoutes);
+app.use("/search", searchRoutes);
 
 app.all("*", (req, res) => {
   res.status(404).send({ error: "Page not found" });
