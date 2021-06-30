@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
   try {
     const con = await mysql.createConnection(mysqlConfig);
     const [data] = await con.execute(
-      `SELECT recipes.id, image, title, name, surname, timestamp FROM recipes JOIN users ON (recipes.owner_id = users.id) ORDER BY recipes.id DESC LIMIT 30`
+      'SELECT recipes.id, image, title, name, surname, timestamp FROM recipes JOIN users ON (recipes.owner_id = users.id) ORDER BY recipes.id DESC LIMIT 4'
     );
     con.end();
 
@@ -21,13 +21,11 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:fromid", async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
     const con = await mysql.createConnection(mysqlConfig);
     const [data] = await con.execute(
-      `SELECT recipes.id, image, title, name, surname, timestamp FROM recipes JOIN users ON (recipes.owner_id = users.id) WHERE recipes.id BETWEEN 1 AND ${
-        Number(req.params.fromid) - 1
-      }  ORDER BY recipes.id DESC LIMIT 30`
+      'SELECT recipes.id, image, title, name, surname, timestamp FROM recipes JOIN users ON (recipes.owner_id = users.id) ORDER BY recipes.id DESC'
     );
     con.end();
 
