@@ -61,7 +61,7 @@ router.get("/recipe/:id", async (req, res) => {
 
     const [comments] = await con.execute(
       `SELECT comments.id, user_id as userId, name, surname, comment, timestamp FROM comments JOIN users ON (comments.user_id = users.id) 
-      WHERE recipe_id = ${mysql.escape(req.params.id)}`
+      WHERE recipe_id = ${mysql.escape(req.params.id)} ORDER BY comments.id ASC`
     );
     con.end();
 
